@@ -1,28 +1,34 @@
-import graphene
+from graphene import ObjectType, relay
 
 from cookbook.ingredients.models import Category, Ingredient
+from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.types import DjangoObjectType
 
 
-class CategoryType(DjangoObjectType):
+class CategoryNode(DjangoObjectType):
     class Meta:
         model = Category
+        filter_fields = ['name', 'ingredients']
+        interfaces = (relay.Node, )
 
 
-class IngredientType(DjangoObjectType):
+class IngredientNode(DjangoObjectType):
     class Meta:
         model = Ingredient
+        filter_fields = {
+          'name': ['exact', 'icontains', 'istartswith'],
+          'notes': ['exact', 'icontains'],
+          'category': ['exact'],
+          'category__name': ['exact'],
+        }
+        interfaces = (relay.Node, )
 
 
 class Query(object):
-    category = graphene.Field(CategoryType,
-                              id=graphene.Int(),
-                              name=graphene.String())
-    all_categories = graphene.List(CategoryType)
-    ingredient = graphene.Field(IngredientType,
-                                id=graphene.Int(),
-                                name=graphene.String())
-    all_ingredients = graphene.List(IngredientType)
+    category = relay.Node.Field(CategoryNode)
+    all_categories = DjangoFilterConnectionField(CategoryNode)
+    ingredient = relay.Node.Field(IngredientNode)
+    all_ingredients = DjangoFilterConnectionField(IngredientNode)
 
     def resolve_all_categories(self, info, **kwargs):
         return Category.objects.all()
