@@ -44,7 +44,11 @@ INSTALLED_APPS = [
 
 # graphene config
 GRAPHENE = {
-  'SCHEMA': 'cookbook.schema.schema',
+    'SCHEMA': 'cookbook.schema.schema',
+    'SCHEMA_OUTPUT': 'schema.json',
+    'MiDDLEWARE': [
+        'graphene_django.debug.DjangoDebugMiddleware',
+    ]
 }
 
 MIDDLEWARE = [
